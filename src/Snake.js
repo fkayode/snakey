@@ -7,39 +7,100 @@ const Directions = {
     Up: 38,
     Down: 40
 }
-// const body=[{x:0,y:0,w:-1,h:0}]
+const body=[{x:0,y:0,w:-1,h:0}]
 const width =20
 const height =20
+const snakeTails=[]
+const possibleX = [...Array(300).keys()].filter(v => v%width==0 && v>width)
+const possibleY = [...Array(300).keys()].filter(v => v%height==0&& v>height)
+
 function Snake() {
     const canvasRef = useRef(null)
-    const [snakeLength, setSnakeLength] = useState(1);
-    const [W, setW] = useState(-1);
-    const [H, setH] = useState(1);
+    const [snakeLength, setSnakeLength] = useState(0);
     const [snakePos, setSnakePos] = useState([0, 0]);
+    const [applePos, setapplePos] = useState({x:100,y:100});
     const [path, setPath] = useState(Directions.Right);
+    const [game, setGame] = useState(0);
+   
+    const newApplePos = (ctx)=>{
+        const randX= possibleX[Math.floor(Math.random()*possibleX.length)];
+        const randY= possibleY[Math.floor(Math.random()*possibleY.length)];
+        setapplePos({x:randX, y:randY})
+    }
 
-    const draw = (ctx, pos, length, w, h) => {
+
+    const drawTails = (ctx, pos, length, w, h) => {
         // console.log("drawing snake pos", snakePos)
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        // const pos = snakePos
-        // for (const square in length){
-            // const add = square
-            ctx.beginPath()
+        
+        const st =snakeTails //.slice(0,snakeLength)
+        // draw head
+        ctx.beginPath()
         ctx.rect(pos[0], pos[1], width, height);
         ctx.fillStyle = "pink";
         ctx.fill()
+    
+        // update 
+        
+        // draw tail
         let range = [...Array(length).keys()]
-        // for (const square in range){
-            for (const square in body){
-        //    const square=2
+        // console.log("RANGE:", range)
+    
+       
+        //draw
+        // console.log("tals start",st)
+        // console.log("tals start",st.slice(), st.at(-1))
+        let square ={}
+        for (const i in st){
+            // console.log("loop:",i)
+            square = st[i]
+            if (square){
+                console.log(i, square)
+                console.log("drawing tail with ", square.x+(10*w), square.y+(10*h),width, height)
+                ctx.beginPath()
+                ctx.rect(square.x, square.y,width, height);
 
-          const bx = pos[0] +(20*w*square)
-          const by = pos[1] +(20*h*square)
-        ctx.beginPath()
-        ctx.rect(bx, by, width, height);
-        ctx.fillStyle = "purple";
-        ctx.fill()
+                // ctx.rect(square.x+(w*(i+1)), square.y+(h*(i+1)),width, height);
+                ctx.fillStyle = i==0?"purple":"red";
+                ctx.fill()}
+            
         }
+            
+        //   const bx = pos[0] +(20*w*square)
+        //   const by = pos[1] +(20*h*square)
+      
+        // snakeTails.pop()
+        
+        
+        // snakeTails[1]=({x:pos[0]+ (20*w),y:pos[1]+ (20*h)})
+        // console.log(pos[0], pos[1])
+        
+        
+        // for (const i in range){
+        //     if(i>0){
+        //         // console.log(i)
+        //         snakeTails[i].x =20*i //snakeTails[i-1].x -50//+(20*w)
+        //         snakeTails[i].y =snakeTails[i-1].y //+(20*h)
+        //     }
+        // }
+        snakeTails.unshift({x:pos[0] ,y:pos[1]})
+        
+        // snakeTails.unshift({x:pos[0]+(width*w) ,y:pos[1]+(width*h)})
+        // snakeTails.push({x:pos[0] +(width*w),y:pos[1]+(height*h)})
+        snakeTails.pop()
+        
+        console.log("tals end",st)
+
+        // draw apple
+        // draw head
+        ctx.beginPath()
+        ctx.rect(applePos.x,applePos.y, width, height);
+        ctx.fillStyle = "green";
+        ctx.fill()
+
+
+        
+        
         
     }
     
@@ -49,8 +110,10 @@ function Snake() {
         let w =-1
         let h =0
         let sp = snakePos
+        let mouth = {x:0,y:0}
         if (sp[0] > 300 || sp[0] < 0 || sp[1] > 300 || sp[1] < 0) {
             setSnakePos([1, 1])
+            
             setPath(Directions.Right)
             return
         }
@@ -59,20 +122,21 @@ function Snake() {
                 
                 w= -1
                 h=(0)
-                pos = [5, 0]
+                pos = [width, 0]
+
                 break
             case Directions.Left:
-                pos = [-5, 0]
+                pos = [-width, 0]
                 w= 1
                 h=(0)
                 break
             case Directions.Up:
-                pos = [0, -5]
+                pos = [0, -width]
                 h= 1
                 w=(0)
                 break
             case Directions.Down:
-                pos = [0, 5]
+                pos = [0, width]
                 h= -1
                 w=(0)
                 break
@@ -83,24 +147,43 @@ function Snake() {
         const newPos = sp.map((v, i) => v + pos[i])
         // console.log("snake pos should be", pos,newPos)
         body.push({x:newPos[0],y:newPos[1],w:w,h:h}) 
-        draw(ctx, newPos, snakeLength, w,h)
+        drawTails(ctx, newPos, snakeLength, w,h)
+        // draw(ctx, newPos, snakeLength, w,h)
+        
+        if(newPos[0]==applePos.x && newPos[1]==applePos.y){
+            snakeTails.push({})
+            setSnakeLength(s=> s+1)
+            newApplePos(ctx);
+            // setGame(0)
+        }
         setSnakePos(newPos)
+
+        
+
+        
     }, [path, snakePos, snakeLength])
     // componentDidMount()
     useEffect(() => {
         const changePath = (event) => {
             const key = event.keyCode
             console.log("pressed", key)
+            if(key == 32){
+                setGame(g=>!g)
+            }
             
             if (Object.values(Directions).indexOf(key) > -1) {
-                setSnakeLength(s=> s+ 1)
+                // setSnakeLength(s=> s+ 1)
                 setPath(key)
+                // snakeTails.push({})
                 
             }
         }
-// console.log("rerender")
+
+
+// console.log("rerender", snakeTails)
         const canvas = canvasRef.current
         const context = canvas.getContext('2d')
+        // context.scale(3, 3);
         //Our first draw
         context.fillStyle = '#000000'
         //context.fillRect(0, 0, context.canvas.width, context.canvas.height)
@@ -108,18 +191,31 @@ function Snake() {
         //Our draw come here
         //   const interval = 
 
-        
-        setTimeout(() => {
+        if(game){setTimeout(() => {
             moveSnake(context);
-        }, 100)
+
+            //check if ate apple
+        
+        }, 150)}
+        
+        
         
 
         return () => {
             window.removeEventListener('keydown', changePath);
+
+            
+            // context.fillStyle = 'red';
+// context.fillRect(10, 10, 8, 20);
+
+// Reset current transformation matrix to the identity matrix
+// context.setTransform(1, 0, 0, 1, 0, 0);
+
+
             // context.fillRect(0, 0, context.canvas.width, context.canvas.height)
             // clearInterval(interval);
         };
-    }, [snakePos])
+    }, [snakePos, game])
 
     return (
 
