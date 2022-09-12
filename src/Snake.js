@@ -1,6 +1,9 @@
 import './Snake.css';
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 
+
+// todo: convert to jsx
+
 const Directions = {
     Right: 39,
     Left: 37,
@@ -34,10 +37,29 @@ function Snake() {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         
         const st =snakeTails //.slice(0,snakeLength)
+
+         // draw apple
+        
+         ctx.beginPath()
+         ctx.rect(applePos.x,applePos.y, width, height);
+         ctx.fillStyle = "green";
+         ctx.fill()
+         // draw x+y
+           ctx.beginPath()
+           ctx.rect(applePos.x,applePos.y, 5, 5);
+           ctx.fillStyle = "yellow";
+           ctx.fill()
+        
         // draw head
         ctx.beginPath()
         ctx.rect(pos[0], pos[1], width, height);
         ctx.fillStyle = "pink";
+        ctx.fill()
+
+        // draw x+y
+        ctx.beginPath()
+        ctx.rect(pos[0], pos[1], 5, 5);
+        ctx.fillStyle = "yellow";
         ctx.fill()
     
         // update 
@@ -91,12 +113,7 @@ function Snake() {
         
         console.log("tals end",st)
 
-        // draw apple
-        // draw head
-        ctx.beginPath()
-        ctx.rect(applePos.x,applePos.y, width, height);
-        ctx.fillStyle = "green";
-        ctx.fill()
+       
 
 
         
@@ -112,7 +129,7 @@ function Snake() {
         let sp = snakePos
         let mouth = {x:0,y:0}
         if (sp[0] > 300 || sp[0] < 0 || sp[1] > 300 || sp[1] < 0) {
-            setSnakePos([1, 1])
+            setSnakePos([0, 0])
             
             setPath(Directions.Right)
             return
@@ -123,6 +140,8 @@ function Snake() {
                 w= -1
                 h=(0)
                 pos = [width, 0]
+                
+
 
                 break
             case Directions.Left:
@@ -144,18 +163,32 @@ function Snake() {
                 break
         }
         // console.log("using snake pos", sp)
+
+        
         const newPos = sp.map((v, i) => v + pos[i])
+
+        // mouth.x = newPos[0] 
+        // + width //right or 0
+        // + 0 // left?
+        // +
         // console.log("snake pos should be", pos,newPos)
         body.push({x:newPos[0],y:newPos[1],w:w,h:h}) 
-        drawTails(ctx, newPos, snakeLength, w,h)
-        // draw(ctx, newPos, snakeLength, w,h)
-        
+
+        // is apple inside?
+
+
+
         if(newPos[0]==applePos.x && newPos[1]==applePos.y){
             snakeTails.push({})
             setSnakeLength(s=> s+1)
             newApplePos(ctx);
             // setGame(0)
         }
+
+        drawTails(ctx, newPos, snakeLength, w,h)
+        // draw(ctx, newPos, snakeLength, w,h)
+        
+        
         setSnakePos(newPos)
 
         
