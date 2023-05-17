@@ -4,98 +4,143 @@ import React, { useRef, useEffect, useState, useCallback } from 'react'
 
 // todo: convert to jsx
 
+// todo: add new game start menu
+
+// todo: stop right at edge please
+// todo: add indication when player loses (animation? sad face?)
+
+// todo: remove yellow in corners 
+// todo: larger gameboard
+// todo: make apple look like an apple
+// make snake look like a snake??
+// todo: start apple in middle and apple in front
+
 const Directions = {
     Right: 39,
     Left: 37,
     Up: 38,
     Down: 40
 }
-const body=[{x:0,y:0,w:-1,h:0}]
+
+
+// apple width and height (also same for snake parts)
 const width =20
 const height =20
 let previousPath = {}
 const snakeTails=[{x:-width,y:0}]
-const possibleX = [...Array(300).keys()].filter(v => v%width==0 && v>width)
-const possibleY = [...Array(300).keys()].filter(v => v%height==0&& v>height)
+const canvasWidth = 300;
+// below are an array of the possible posiotions the apple can be (within the borders)
+const possibleX = [...Array(canvasWidth).keys()].filter(v => v%width==0 && v>width)
+const possibleY = [...Array(canvasWidth).keys()].filter(v => v%height==0&& v>height)
+
+function isEqual(pos1,pos2) {
+    if(pos1.x==pos2.x && pos1.y==pos2.y){
+    console.log("found a hit!" )
+    return true
+    }
+    else return false
+ }
 
 function Snake() {
+    // init data
     const canvasRef = useRef(null)
-    const [snakeLength, setSnakeLength] = useState(0);
-    const [snakePos, setSnakePos] = useState([0, 0]);
-    const [applePos, setapplePos] = useState({x:100,y:100});
-    const [path, setPath] = useState(Directions.Right);
-    const [game, setGame] = useState(0);
-    const [hit, setHit] = useState(0);
-   
-    const newApplePos = (ctx)=>{
+    const [snakeLength, setSnakeLength] = useState(0); // initialize snake length to zero
+    const [snakePos, setSnakePos] = useState([0, 0]); // set snake position to [0,0]
+    const [applePos, setApplePos] = useState({x:100,y:100}); // set apple position to [100,00]
+    const [path, setPath] = useState(Directions.Right); // the current direction of the snake
+    const [game, setGame] = useState(0); // is game running? bool? start as false
+    const [hit, setHit] = useState(0); // if snake hits border or itself. bool
+    const [maxScore, setMaxScore] = useState(0); // initialize snake length to zero
+    
+    
+    
+    const changeApplePos = (ctx)=>{
         const randX= possibleX[Math.floor(Math.random()*possibleX.length)];
         const randY= possibleY[Math.floor(Math.random()*possibleY.length)];
-        setapplePos({x:randX, y:randY})
+        setApplePos({x:randX, y:randY})
     }
 
-
-    const drawTails = (ctx, pos, length, w, h) => {
-        // console.log("drawing snake pos", snakePos)
-        if (hit) {
-            return;   
-        }
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-        const st =snakeTails //.slice(0,snakeLength)
-
-         // draw apple
-         ctx.beginPath()
-         ctx.rect(applePos.x,applePos.y, width, height);
-         ctx.fillStyle = "green";
-         ctx.fill()
-         // draw apple x y
-           ctx.beginPath()
-           ctx.rect(applePos.x,applePos.y, 5, 5);
-           ctx.fillStyle = "yellow";
-           ctx.fill()
-
-        // draw head
+    // draws the apple on the canvas
+    const placeApple = (ctx) => {
+        // draw apple
         ctx.beginPath()
-        ctx.rect(pos[0], pos[1], width, height);
-        ctx.fillStyle = "pink";
+        ctx.rect(applePos.x,applePos.y, width, height);
+        ctx.fillStyle = "green";
         ctx.fill()
-        // draw head x+y
-        ctx.beginPath()
-        ctx.rect(pos[0], pos[1], 5, 5);
-        ctx.fillStyle = "yellow";
-        ctx.fill() 
+        // draw apple x y
+          ctx.beginPath()
+          ctx.rect(applePos.x,applePos.y, 5, 5);
+          ctx.fillStyle = "yellow";
+          ctx.fill()
+    }
+
     
-        const head= {x:pos[0],y:pos[1]}
-         const oldhead= {x:snakePos[0],y:snakePos[1]}        
-         console.log("SLEEP, old pos", oldhead)
-        console.log("SLEEP new pos,", head)
-        console.log("SLEEP snake tails head", snakeTails[0]) 
-        function isEqual(a,b) {
-            console.log("compare", a, b)
-           if(a.x==b.x){
-           if(a.y==b.y) { console.log("found!" )
-           return true
-           }
-           } 
-           else return false
-          }
-        for(const tail in snakeTails){
-            if (isEqual(snakeTails[tail],head)){
-                setGame(0)
-                setHit(1)
+    // const gameOver = () => {
+      
+    //             setGame(0)
+    //             // setHit(1)
+        
+          
+    // }
+
+    // checks if new position will cause a collision.
+    // returns true if snake will hit its tail and false if not
+    const willSnakeCollide = (newPos) => {
+        const newHead= {x:newPos[0],y:newPos[1]}
+        const newTail=snakeTails.slice()
+          // check for hits
+        for(const section in newTail){
+            if (isEqual(newTail[section],newHead)){
                 // setGame(0)
+                setHit(1)
+        
+                return true;
+          
                 
                 
                 break;
             }
+           
         }
+  
+        return false;
+    }
+
+    
+
+
+
+
+    // draws the snake + its tails
+    const drawTails = (ctx, newPos, length, w, h) => {
+        // console.log("drawing snake pos", snakePos)
+        // do not draw if hit
+        // checkForHit(newPos);
+        const potentialHit = willSnakeCollide(newPos)
+        if (hit  || potentialHit) {
+       
+            return;   
+        }
+
+        // clear canvas
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+        // const st =snakeTails //.slice(0,snakeLength)
+
+        // draw apple on canvas
+        placeApple(ctx)
+
+        
+    
+        
+        
         
          
         // draw tail
         let square ={}
-        for (const i in st){
+        for (const i in snakeTails){
             // console.log("loop:",i)
-            square = st[i]
+            square = snakeTails[i]
             if (square){
                 // console.log(i, square)
                 // console.log("drawing tail with ", square.x+(10*w), square.y+(10*h),width, height)
@@ -106,20 +151,22 @@ function Snake() {
                 ctx.fill()}
             
         }
-            
-        
-        
+        // draw head
+        ctx.beginPath()
+        ctx.rect(newPos[0], newPos[1], width, height);
+        ctx.fillStyle = "pink";
+        ctx.fill()
+        // draw head x+y
+        ctx.beginPath()
+        ctx.rect(newPos[0], newPos[1], 5, 5);
+        ctx.fillStyle = "yellow";
+        ctx.fill() 
+          
         // update snake tail start position
-        snakeTails.unshift({x:pos[0] ,y:pos[1]})
+        snakeTails.unshift({x:newPos[0] ,y:newPos[1]})
         snakeTails.pop()
-        console.log("tals end",st)
-
-       
-
-
-        
-        
-        
+        // console.log("tals end",snakeTails)
+    
     }
     
 
@@ -131,7 +178,7 @@ function Snake() {
         if (hit) {
             return;
         }
-        if (sp[0] > 300 || sp[0] < 0 || sp[1] > 300 || sp[1] < 0) {
+        if (sp[0] > canvasWidth || sp[0] < 0 || sp[1] > canvasWidth || sp[1] < 0) {
             // setSnakePos([0, 0])
             setHit(1)
             
@@ -145,8 +192,6 @@ function Snake() {
                 h=(0)
                 pos = [width, 0]
                 if (previousPath == Directions.Left){setHit(1);}
-
-
                 break
             case Directions.Left:
                 pos = [-width, 0]
@@ -171,132 +216,83 @@ function Snake() {
         }
         previousPath=path
         // console.log("using snake pos", sp)
-
-        
         const newPos = sp.map((v, i) => v + pos[i])
-
-        // const head= {x:newPos[0],y:newPos[1]}
-        // const oldhead= {x:sp[0],y:sp[1]}
-        
-        // let indexFound= snakeTails.indexOf({head})
-        // console.log(indexFound)
-        // if(indexFound>0) {
-        //     // setGame(0)
-        //     // snakeTails=[]
-        //     // setSnakeLength(0)
-        //     setGame(0)
-
-        // }
-
-      
-
-        // if(pos[0]==snakeTails[0].x && pos[1]==snakeTails[0].y){
-        //     console.log("wrong way")
-        //     snakeTails =[]
-        //     setSnakeLength(1)
-        //     // newApplePos(ctx);
-        //     setGame(0)
-        // }
-
-        // mouth.x = newPos[0] 
-        // + width //right or 0
-        // + 0 // left?
-        // +
-        // console.log("snake pos should be", pos,newPos)
-        // body.push({x:newPos[0],y:newPos[1],w:w,h:h}) 
 
         // is apple inside?
         if(newPos[0]==applePos.x && newPos[1]==applePos.y){
             snakeTails.push({})
             setSnakeLength(s=> s+1)
-            newApplePos(ctx);
+            changeApplePos(ctx);
             // setGame(0)
         }
 
         drawTails(ctx, newPos, snakeLength, w,h)
         // draw(ctx, newPos, snakeLength, w,h)
-        
-        
+               
         setSnakePos(newPos)
-
-        
-
-        
-
         
     }, [path, snakePos, snakeLength])
     // componentDidMount()
+
+    function restart(){
+        if(hit){}
+        setGame(0)
+        console.log("restarting")
+        snakeTails.length=1
+        setSnakeLength(0)
+        setSnakePos([0, 0])
+        setPath(Directions.Right)  
+        setHit(0)
+        setGame(1)
+    };
+
     useEffect(() => {
         const changePath = (event) => {
             const key = event.keyCode
             console.log("pressed", key)
-            if(key == 32){
-                if(hit) {
-            snakeTails.length=1
-            setSnakeLength(0)
-            setSnakePos([0, 0])
-            setPath(Directions.Right)  
-                    setHit(0)}
-                setGame(g=>!g)
-            }
-            
             if (game && Object.values(Directions).indexOf(key) > -1) {
-                // setSnakeLength(s=> s+ 1)
                 setPath(key)
-                // snakeTails.push({})
-                
             }
         }
 
-
-// console.log("rerender", snakeTails)
         const canvas = canvasRef.current
         const context = canvas.getContext('2d')
         // context.scale(3, 3);
         //Our first draw
         context.fillStyle = '#000000'
-        //context.fillRect(0, 0, context.canvas.width, context.canvas.height)
         window.addEventListener('keydown', changePath);
-        //Our draw come here
-        //   const interval = 
         if (hit) {
+            setMaxScore(Math.max(maxScore,snakeLength))
             setGame(0)
-            // snakeTails.length=0
-            // setSnakeLength(0)     
+
         }else{if(game){setTimeout(() => {
             moveSnake(context);
-
-            //check if ate apple
-        
         }, 150)}}
-
-        
 
         return () => {
             window.removeEventListener('keydown', changePath);
 
-            
-            // context.fillStyle = 'red';
-// context.fillRect(10, 10, 8, 20);
-
-// Reset current transformation matrix to the identity matrix
-// context.setTransform(1, 0, 0, 1, 0, 0);
-
-
-            // context.fillRect(0, 0, context.canvas.width, context.canvas.height)
-            // clearInterval(interval);
         };
     }, [snakePos, game, hit])
 
     return (
 
         <div className="Snake" >
+<div><p>
+                Welcome to Snake app 
+            </p></div>
 
-            <p>
-                Welcome to Snake app {snakeLength}
-            </p>
+<div>
+    Current score: {snakeLength}  ||  
+    Max Score: {maxScore}
+</div>
+            
+            <div>
+            <button onClick={restart}>Start New Game</button>
+            </div>
+            
 
-            <canvas class="board" ref={canvasRef} width="300" height="300" />
+            <canvas class="board" ref={canvasRef} width={canvasWidth} height={canvasWidth} />
         </div>
     );
 }
