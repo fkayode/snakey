@@ -1,18 +1,18 @@
 {
   "files": {
     "main.css": "/snakey/static/css/main.3d357ff3.css",
-    "main.js": "/snakey/static/js/main.b9be939a.js",
+    "main.js": "/snakey/static/js/main.45c36735.js",
     "static/js/787.ec7ed366.chunk.js": "/snakey/static/js/787.ec7ed366.chunk.js",
     "static/media/bitten.png": "/snakey/static/media/bitten.4fbae3dc682e3f50bfc2.png",
     "static/media/apple.png": "/snakey/static/media/apple.95c34ac6544b6a66df32.png",
     "static/media/logo.svg": "/snakey/static/media/logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg",
     "index.html": "/snakey/index.html",
     "main.3d357ff3.css.map": "/snakey/static/css/main.3d357ff3.css.map",
-    "main.b9be939a.js.map": "/snakey/static/js/main.b9be939a.js.map",
+    "main.45c36735.js.map": "/snakey/static/js/main.45c36735.js.map",
     "787.ec7ed366.chunk.js.map": "/snakey/static/js/787.ec7ed366.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.3d357ff3.css",
-    "static/js/main.b9be939a.js"
+    "static/js/main.45c36735.js"
   ]
 }
