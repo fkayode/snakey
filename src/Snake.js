@@ -210,6 +210,7 @@ function Snake() {
         console.log("restarting", snakeTails.length)
         snakeTails.splice(0, snakeTails.length, { x: -width, y: 0 })
         mouthPos = { x: 0, y: 200 }
+        previousPath = {}
         setGame(0)
         setSnakeLength(0)
         setSnakePos([0, 200])
